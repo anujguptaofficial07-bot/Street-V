@@ -22,14 +22,25 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Make Gradle executable
-        run: chmod +x ./gradlew
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.10.2
+
+      - name: Find Android project
+        run: |
+          echo "Finding settings.gradle..."
+          PROJECT_DIR=$(dirname $(find . -maxdepth 3 -name "settings.gradle" | head -n 1))
+          echo "PROJECT_DIR=$PROJECT_DIR" >> $GITHUB_ENV
+          echo "Android project found at: $PROJECT_DIR"
 
       - name: Build Debug APK
-        run: ./gradlew assembleDebug
+        run: |
+          cd "$PROJECT_DIR"
+          gradle assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: StreetLens360-debug-apk
-          path: app/build/outputs/apk/debug/*.apk
+          path: "**/app/build/outputs/apk/debug/*.apk"
